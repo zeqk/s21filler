@@ -1,4 +1,6 @@
-﻿using iTextSharp.text.pdf;
+﻿using CommandLine;
+using iTextSharp.text.pdf;
+using OfficeOpenXml;
 using S21Filler.Model;
 using System;
 using System.Collections.Generic;
@@ -11,285 +13,176 @@ namespace S21Filler
 {
     class Program
     {
-        static void Main(string[] args)
+
+        class Options
         {
-            string pdfTemplate = @"C:\Users\perez.e\Desktop\TEMP\S-21-S_4up.pdf";
 
-            string newFile = @"C:\Users\perez.e\Desktop\TEMP\S-21-S_4up3.pdf";
+            [Value(0, MetaName = "s21template", Required = true, HelpText = "Plantilla PDF S-21")]
+            public string S21Template { get; set; }
 
-            var record = new YearRecord()
-            {
-                Name = "Juan Jorge",
-                Number = "321312",
-                HomeAddress = "Callao 23, Claypole",
-                HomeTelephone = "42335544",
-                MobileTelephone = "1545487899",
-                DateOfBirth = new DateTime(1988, 01, 01),
-                ImmersedDate = new DateTime(1998, 01, 01),
-                Anointed = "O.O.",
-                Gender = Genders.Male,
-                E = true,
-                MS = false,
-                RP = true,
-                Year = 2018
-            };
-            record.Reports.Add(new MonthReport()
-            {
-                Month =1,
-                Hours = 70,
-                Placements = 10,
-                Studies =1,
-                ReturnVisits = 10,
-                VideoShowings = 12,
-                Remarks ="Enfermedad"
-            });
+            [Value(1, MetaName = "excel", Required = true, HelpText = "Excel")]
+            public string Excel { get; set; }
 
-            var pdfReader = new PdfReader(pdfTemplate);
+            [Value(2, MetaName = "year", Required = true, HelpText = "Año")]
+            public int Year { get; set; }
 
-            var pdfStamper = new PdfStamper(pdfReader, new FileStream(newFile, FileMode.Create));
+            [Value(3, MetaName = "output-folder", Required = true, HelpText = "Carpeta destino")]
+            public string OutputFolder { get; set; }
 
-            var pdfFormFields = pdfStamper.AcroFields;
-            pdfFormFields.SetYearRecord(1, record);
 
-            //pdfFormFields.SetField("Check Box1", "Yes");
-            //pdfFormFields.SetField("Check Box2", "0");
-            //pdfFormFields.SetField("Text3", "");
-            //pdfFormFields.SetField("Text4", "");
-            //pdfFormFields.SetField("Text5", "42191111");
-            //pdfFormFields.SetField("Text6", "1522465465");
-            //pdfFormFields.SetField("Text7", "25/11/1988");
-            //pdfFormFields.SetField("Text8", "13/4/2003");
-            //pdfFormFields.SetField("Text9", "O.O.");
-            //pdfFormFields.SetField("Check Box10", "Yes");
-            //pdfFormFields.SetField("Check Box11", "0");
-            //pdfFormFields.SetField("Check Box12", "Yes");
-            //pdfFormFields.SetField("Text12.01", "2018");
-
-
-            //for (int i = 13; i < 90; i++)
-            //{
-
-            //}
-
-            //pdfFormFields.SetField("Text13", "1");
-            //pdfFormFields.SetField("Text14", "1");
-            //pdfFormFields.SetField("Text15", "1");
-            //pdfFormFields.SetField("Text16", "1");
-            //pdfFormFields.SetField("Text17", "Observación 1");
-            //pdfFormFields.SetField("Text18", "1");
-            //pdfFormFields.SetField("Text19", "1");
-            //pdfFormFields.SetField("Text20", "1");
-            //pdfFormFields.SetField("Text21", "1");
-            //pdfFormFields.SetField("Text22", "Observación 2");
-            //pdfFormFields.SetField("Text23", "1");
-            //pdfFormFields.SetField("Text24", "1");
-            //pdfFormFields.SetField("Text25", "1");
-            //pdfFormFields.SetField("Text26", "1");
-            //pdfFormFields.SetField("Text27", "Observación 3");
-            //pdfFormFields.SetField("Text28", "1");
-            //pdfFormFields.SetField("Text29", "1");
-            //pdfFormFields.SetField("Text30", "1");
-            //pdfFormFields.SetField("Text31", "1");
-            //pdfFormFields.SetField("Text32", "Observación 4");
-            //pdfFormFields.SetField("Text33", "1");
-            //pdfFormFields.SetField("Text34", "1");
-            //pdfFormFields.SetField("Text35", "1");
-            //pdfFormFields.SetField("Text36", "1");
-            //pdfFormFields.SetField("Text37", "Observación 5");
-            //pdfFormFields.SetField("Text38", "1");
-            //pdfFormFields.SetField("Text39", "1");
-            //pdfFormFields.SetField("Text40", "1");
-            //pdfFormFields.SetField("Text41", "1");
-            //pdfFormFields.SetField("Text42", "Observación 6");
-            //pdfFormFields.SetField("Text43", "1");
-            //pdfFormFields.SetField("Text44", "1");
-            //pdfFormFields.SetField("Text45", "1");
-            //pdfFormFields.SetField("Text46", "1");
-            //pdfFormFields.SetField("Text47", "1");
-            //pdfFormFields.SetField("Text48", "1");
-            //pdfFormFields.SetField("Text49", "1");
-            //pdfFormFields.SetField("Text50", "1");
-            //pdfFormFields.SetField("Text51", "1");
-            //pdfFormFields.SetField("Text52", "1");
-            //pdfFormFields.SetField("Text53", "1");
-            //pdfFormFields.SetField("Text54", "1");
-            //pdfFormFields.SetField("Text55", "1");
-            //pdfFormFields.SetField("Text56", "1");
-            //pdfFormFields.SetField("Text57", "1");
-            //pdfFormFields.SetField("Text58", "1");
-            //pdfFormFields.SetField("Text59", "1");
-            //pdfFormFields.SetField("Text60", "1");
-            //pdfFormFields.SetField("Text61", "1");
-            //pdfFormFields.SetField("Text62", "1");
-            //pdfFormFields.SetField("Text63", "1");
-            //pdfFormFields.SetField("Text64", "1");
-            //pdfFormFields.SetField("Text65", "1");
-            //pdfFormFields.SetField("Text66", "1");
-            //pdfFormFields.SetField("Text67", "1");
-            //pdfFormFields.SetField("Text68", "1");
-            //pdfFormFields.SetField("Text69", "1");
-            //pdfFormFields.SetField("Text70", "1");
-            //pdfFormFields.SetField("Text71", "1");
-            //pdfFormFields.SetField("Text72", "1");
-            //pdfFormFields.SetField("Text73", "1");
-            //pdfFormFields.SetField("Text74", "1");
-            //pdfFormFields.SetField("Text75", "1");
-            //pdfFormFields.SetField("Text76", "1");
-            //pdfFormFields.SetField("Text77", "1");
-            //pdfFormFields.SetField("Text78", "1");
-            //pdfFormFields.SetField("Text79", "1");
-            //pdfFormFields.SetField("Text80", "1");
-            //pdfFormFields.SetField("Text81", "1");
-            //pdfFormFields.SetField("Text82", "1");
-            //pdfFormFields.SetField("Text83", "1");
-            //pdfFormFields.SetField("Text84", "1");
-            //pdfFormFields.SetField("Text85", "1");
-            //pdfFormFields.SetField("Text86", "1");
-            //pdfFormFields.SetField("Text87", "1");
-            //pdfFormFields.SetField("Text88", "1");
-            //pdfFormFields.SetField("Text89", "1");
-            //pdfFormFields.SetField("Text90", "1");
-
-
-            // set form pdfFormFields
-
-            // The first worksheet and W-4 form
-
-            //pdfFormFields.SetField("f1_01(0)", "1");
-
-            //pdfFormFields.SetField("f1_02(0)", "1");
-
-            //pdfFormFields.SetField("f1_03(0)", "1");
-
-            //pdfFormFields.SetField("f1_04(0)", "8");
-
-            //pdfFormFields.SetField("f1_05(0)", "0");
-
-            //pdfFormFields.SetField("f1_06(0)", "1");
-
-            //pdfFormFields.SetField("f1_07(0)", "16");
-
-            //pdfFormFields.SetField("f1_08(0)", "28");
-
-            //pdfFormFields.SetField("f1_09(0)", "Franklin A.");
-
-            //pdfFormFields.SetField("f1_10(0)", "Benefield");
-
-            //pdfFormFields.SetField("f1_11(0)", "532");
-
-            //pdfFormFields.SetField("f1_12(0)", "12");
-
-            //pdfFormFields.SetField("f1_13(0)", "1234");
-
-
-
-            // The form's checkboxes
-
-            //pdfFormFields.SetField("c1_01(0)", "0");
-
-            //pdfFormFields.SetField("c1_02(0)", "Yes");
-
-            //pdfFormFields.SetField("c1_03(0)", "0");
-
-            //pdfFormFields.SetField("c1_04(0)", "Yes");
-
-
-
-            //// The rest of the form pdfFormFields
-
-            //pdfFormFields.SetField("f1_14(0)", "100 North Cujo Street");
-
-            //pdfFormFields.SetField("f1_15(0)", "Nome, AK  67201");
-
-            //pdfFormFields.SetField("f1_16(0)", "9");
-
-            //pdfFormFields.SetField("f1_17(0)", "10");
-
-            //pdfFormFields.SetField("f1_18(0)", "11");
-
-            //pdfFormFields.SetField("f1_19(0)", "Walmart, Nome, AK");
-
-            //pdfFormFields.SetField("f1_20(0)", "WAL666");
-
-            //pdfFormFields.SetField("f1_21(0)", "AB");
-
-            //pdfFormFields.SetField("f1_22(0)", "4321");
-
-
-
-            //// Second Worksheets pdfFormFields
-
-            //// In order to map the fields, I just pass them a sequential
-
-            //// number to mark them; once I know which field is which, I
-
-            //// can pass the appropriate value
-
-            //pdfFormFields.SetField("f2_01(0)", "1");
-
-            //pdfFormFields.SetField("f2_02(0)", "2");
-
-            //pdfFormFields.SetField("f2_03(0)", "3");
-
-            //pdfFormFields.SetField("f2_04(0)", "4");
-
-            //pdfFormFields.SetField("f2_05(0)", "5");
-
-            //pdfFormFields.SetField("f2_06(0)", "6");
-
-            //pdfFormFields.SetField("f2_07(0)", "7");
-
-            //pdfFormFields.SetField("f2_08(0)", "8");
-
-            //pdfFormFields.SetField("f2_09(0)", "9");
-
-            //pdfFormFields.SetField("f2_10(0)", "10");
-
-            //pdfFormFields.SetField("f2_11(0)", "11");
-
-            //pdfFormFields.SetField("f2_12(0)", "12");
-
-            //pdfFormFields.SetField("f2_13(0)", "13");
-
-            //pdfFormFields.SetField("f2_14(0)", "14");
-
-            //pdfFormFields.SetField("f2_15(0)", "15");
-
-            //pdfFormFields.SetField("f2_16(0)", "16");
-
-            //pdfFormFields.SetField("f2_17(0)", "17");
-
-            //pdfFormFields.SetField("f2_18(0)", "18");
-
-            //pdfFormFields.SetField("f2_19(0)", "19");
-
-
-
-            //// report by reading values from completed PDF
-
-            //string sTmp = "W-4 Completed for " + pdfFormFields.GetField("f1_09(0)") + " " + pdfFormFields.GetField("f1_10(0)");
-
-            //MessageBox.Show(sTmp, "Finished");
-
-
-
-            // flatten the form to remove editting options, set it to false
-
-            // to leave the form open to subsequent manual edits
-
-            pdfStamper.FormFlattening = false;
-
-
-
-            // close the pdf
-
-            pdfStamper.Close();
-
-            Console.ReadLine();
+            
         }
 
-        
+        static void Main(string[] args)
+        {
+
+            CommandLine.Parser.Default.ParseArguments<Options>(args)
+                .WithParsed(opts => RunOptionsAndReturnExitCode(opts))
+                .WithNotParsed((errs) => HandleParseError(errs));
+
+            
+        }
+
+        private static void HandleParseError(IEnumerable<Error> errs)
+        {
+            
+        }
+
+        private static void RunOptionsAndReturnExitCode(Options opts)
+        {
+            var records = getYearRecords(opts.Year, opts.Excel);
+
+            //string pdfTemplate = @"C:\Users\zeqk\Desktop\TEMP\S-21-S_4up.pdf";
+
+            
+            foreach (var record in records)
+            {
+                using (var pdfReader = new PdfReader(opts.S21Template))
+                {
+                    var output = Path.Combine(opts.OutputFolder, "S-21 - " + record.Name + ".pdf");
+
+                    using (var pdfStamper = new PdfStamper(pdfReader, new FileStream(output, FileMode.Create)))
+                    {
+
+                        var pdfFormFields = pdfStamper.AcroFields;
+                        //pdfFormFields.GenerateAppearances = true;
+                        pdfFormFields.SetYearRecord(1, record);
+                        
+                        // flatten the form to remove editting options, set it to false
+
+                        // to leave the form open to subsequent manual edits
+
+                        //pdfStamper.FormFlattening = false;
+                        //pdfStamper.AnnotationFlattening = false;                        
+                        
+                        // close the pdf
+
+                        pdfStamper.Close();
+                    }
+
+                }
+            }
+                
+            
+
+        }
+
+
+        static IList<YearRecord> getYearRecords(int year, string excelFile)
+        {
+            var rv = new List<YearRecord>();
+
+            //FileInfo file = new FileInfo(@"C:\Users\zeqk\Desktop\TEMP\Actividad.xlsx");
+            var file = new FileInfo(excelFile);
+            try
+            {
+                using (var package = new ExcelPackage(file))
+                {
+                    var worksheet = package.Workbook.Worksheets.FirstOrDefault(w => w.Name == year.ToString());
+
+                    var i = 3;
+                    YearRecord record;
+                    do
+                    {
+                        i++;
+                        record = getYearRecord(worksheet, i);
+                        if (record != null)
+                            rv.Add(record);
+
+                    } while (record != null);
+
+                }
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+
+            return rv;
+        }
+
+        static YearRecord getYearRecord(ExcelWorksheet worksheet, int row)
+        {
+            YearRecord rv = null;
+
+            //FileInfo file = new FileInfo(@"C:\Users\zeqk\Desktop\TEMP\Actividad.xlsx");
+            try
+            {
+                if ((string)worksheet.Cells[row, 1].Value != "TOTAL")
+                {
+                    rv = new YearRecord();
+
+                    rv.Name = (string)worksheet.Cells[row, 1].Value;
+                    rv.RP = (string)worksheet.Cells[row, 2].Value == "PR";
+                    rv.HomeAddress = (string)worksheet.Cells[row, 117].Value;
+                    rv.MobileTelephone = worksheet.Cells[row, 118].GetValue<string>();
+                    rv.HomeTelephone = worksheet.Cells[row, 119].GetValue<string>();
+                    rv.Gender = (string)worksheet.Cells[row, 120].Value == "F" ? Genders.Female : Genders.Male;
+                    rv.DateOfBirth = worksheet.Cells[row, 121].GetValue<DateTime>();
+                    rv.ImmersedDate = worksheet.Cells[row, 122].GetValue<DateTime>();
+                    rv.Anointed = (string)worksheet.Cells[row, 123].Value;
+                    rv.E = (string)worksheet.Cells[row, 124].Value == "SI";
+                    rv.MS = (string)worksheet.Cells[row, 125].Value == "SI";
+                    rv.RP = (string)worksheet.Cells[row, 126].Value == "SI";
+
+                    for (int i = 1; i < 12; i++)
+                    {
+                        var init = 1;
+                        if (i > 1)
+                            init = 10 * i;
+                        init++;
+                        if (worksheet.Cells[row, init + 3] != null && worksheet.Cells[row, init + 3].Value != null)
+                        {
+                            rv.Reports.Add(new MonthReport
+                            {
+                                Placements = worksheet.Cells[row, init + 1].GetValue<int>(),
+                                VideoShowings = worksheet.Cells[row, init + 2].GetValue<int>(),
+                                Hours = worksheet.Cells[row, init + 3].GetValue<int>(),
+                                ReturnVisits = worksheet.Cells[row, init + 4].GetValue<int>(),
+                                Studies = worksheet.Cells[row, init + 5].GetValue<int>(),
+                                Month = i,
+                                Remarks = worksheet.Cells[row, init + 1].Comment != null ? worksheet.Cells[row, init + 1].Comment.Text : null
+                            });
+                        }
+                        else
+                            break;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            
+
+            return rv;
+        }
+
+
     }
+
+
+    
 
     public static class AcroFieldsExtensions
     {
