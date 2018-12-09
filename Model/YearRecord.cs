@@ -13,7 +13,7 @@ namespace S21Filler.Model
 
         public string Name { get; set; }
         public string Number { get; set; }
-        public Genders Gender { get; set; }
+        public Genders? Gender { get; set; }
         public string HomeAddress { get; set; }
         public string HomeTelephone { get; set; }
         public string MobileTelephone { get; set; }

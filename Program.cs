@@ -50,14 +50,87 @@ namespace S21Filler
         {
             var records = getYearRecords(opts.Year, opts.Excel);
 
-            //string pdfTemplate = @"C:\Users\zeqk\Desktop\TEMP\S-21-S_4up.pdf";
+            //saveFileByPublisher(records, opts.S21Template, opts.OutputFolder);
 
-            
+            saveFileByFourPublishers(records, opts.S21Template, opts.OutputFolder);
+
+
+        }
+
+        static void saveFileByFourPublishers(IList<YearRecord> records, string template, string outputFolder)
+        {
+            var i = 0;
             foreach (var record in records)
             {
-                using (var pdfReader = new PdfReader(opts.S21Template))
+                using (var pdfReader = new PdfReader(template))
                 {
-                    var output = Path.Combine(opts.OutputFolder, "S-21 - " + record.Name + ".pdf");
+                    var fourRecords = records.Skip(i).Take(4);
+
+                    if (fourRecords.Any())
+                    {
+
+                        var output = Path.Combine(outputFolder, "S-21 - " + string.Join("; ", fourRecords.Select(r => r.Name)) + ".pdf");
+
+                        using (var pdfStamper = new PdfStamper(pdfReader, new FileStream(output, FileMode.Create)))
+                        {
+
+                            var pdfFormFields = pdfStamper.AcroFields;
+
+
+
+                            for (int x = 1; x <= fourRecords.Count(); x++)
+                            {
+                                pdfFormFields.SetYearRecord(x, fourRecords.ElementAt(x - 1));
+                                Console.WriteLine("S-21 generated for {0}", fourRecords.ElementAt(x - 1).Name);
+                            }
+
+
+                            pdfStamper.Close();
+                        }
+                    }
+                }
+
+                i = i + 4;
+            }
+
+            //PR Totals
+
+            using (var pdfReader = new PdfReader(template))
+            {
+                var output = Path.Combine(outputFolder, "S-21 - TOTALES.pdf");
+
+                using (var pdfStamper = new PdfStamper(pdfReader, new FileStream(output, FileMode.Create)))
+                {
+
+                    var pdfFormFields = pdfStamper.AcroFields;
+
+                    var x = 1;
+                    foreach (var type in (PublisherTypes[])Enum.GetValues(typeof(PublisherTypes)))
+                    {
+                        var totalYearRecord = getTotals(records, type);
+
+                        pdfFormFields.SetYearRecord(x, totalYearRecord);
+                        x++;
+                        Console.WriteLine("S-21 generated for {0}", totalYearRecord.Name);
+                    }
+                    
+
+
+                    pdfStamper.Close();
+                }
+            }
+
+            
+        }
+
+
+        static void saveFileByPublisher(IList<YearRecord> records, string template, string outputFolder)
+        {
+            foreach (var record in records)
+            {
+                using (var pdfReader = new PdfReader(template))
+                {
+                    var output = Path.Combine(outputFolder, "S-21 - " + record.Name + ".pdf");
 
                     using (var pdfStamper = new PdfStamper(pdfReader, new FileStream(output, FileMode.Create)))
                     {
@@ -65,21 +138,21 @@ namespace S21Filler
                         var pdfFormFields = pdfStamper.AcroFields;
                         //pdfFormFields.GenerateAppearances = true;
                         pdfFormFields.SetYearRecord(1, record);
-                        
+
                         // flatten the form to remove editting options, set it to false
 
                         // to leave the form open to subsequent manual edits
 
                         //pdfStamper.FormFlattening = false;
                         //pdfStamper.AnnotationFlattening = false;                        
-                        
+
                         // close the pdf
 
                         pdfStamper.Close();
                     }
                 }
 
-                Console.WriteLine("S-21 generated for {0} {1} months", record.Name,record.Reports.Count);
+                Console.WriteLine("S-21 generated for {0} {1} months", record.Name, record.Reports.Count);
             }
 
             //PR Totals
@@ -87,9 +160,9 @@ namespace S21Filler
             {
                 var totalYearRecord = getTotals(records, type);
 
-                using (var pdfReader = new PdfReader(opts.S21Template))
+                using (var pdfReader = new PdfReader(template))
                 {
-                    var output = Path.Combine(opts.OutputFolder, "S-21 - " + totalYearRecord.Name + ".pdf");
+                    var output = Path.Combine(outputFolder, "S-21 - " + totalYearRecord.Name + ".pdf");
 
                     using (var pdfStamper = new PdfStamper(pdfReader, new FileStream(output, FileMode.Create)))
                     {
@@ -112,12 +185,6 @@ namespace S21Filler
                 }
                 Console.WriteLine("S-21 generated for {0}", totalYearRecord.Name);
             }
-
-
-
-
-
-
         }
 
 
@@ -126,9 +193,9 @@ namespace S21Filler
             var rv = new YearRecord()
             {
                 Anointed = string.Empty,
-                DateOfBirth = DateTime.Now,
+                DateOfBirth = null,
                 E = false,
-                Gender = Genders.Male,
+                Gender = null,
                 HomeAddress = string.Empty,
                 HomeTelephone = string.Empty,
                 ImmersedDate = null,
@@ -320,9 +387,12 @@ namespace S21Filler
         public static void SetYearRecord(this AcroFields fields, int formNumber, YearRecord yearRecord)
         {
             var initIndex = getInitIndex(formNumber);
-            
-            fields.SetField("Check Box" + (initIndex + 1), yearRecord.Gender == Genders.Male ? "Yes" : "0");            
-            fields.SetField("Check Box" + (initIndex + 2), yearRecord.Gender == Genders.Female ? "Yes" : "0");
+
+            if (yearRecord.Gender.HasValue)
+            {
+                fields.SetField("Check Box" + (initIndex + 1), yearRecord.Gender == Genders.Male ? "Yes" : "0");
+                fields.SetField("Check Box" + (initIndex + 2), yearRecord.Gender == Genders.Female ? "Yes" : "0");
+            }
             fields.SetFieldProperty("Text" + (initIndex + 3), "textsize", 8f, null);
             fields.SetField("Text" + (initIndex + 3), yearRecord.Name + (!string.IsNullOrEmpty(yearRecord.Number) ? $" (#{yearRecord.Number})" : string.Empty));
             fields.SetFieldProperty("Text" + (initIndex + 4), "textsize", 8f, null);
