@@ -161,6 +161,7 @@ namespace S21Filler
             {
                 var monthReport = new MonthReport
                 {
+                    Month = month,
                     Placements = records.Sum(yr => yr.Reports.Where(mr => mr.Month == month && mr.Type == type).Sum(mr => mr.Placements)),
                     VideoShowings = records.Sum(yr => yr.Reports.Where(mr => mr.Month == month && mr.Type == type).Sum(mr => mr.VideoShowings)),
                     Hours = records.Sum(yr => yr.Reports.Where(mr => mr.Month == month && mr.Type == type).Sum(mr => mr.Hours)),
@@ -254,7 +255,7 @@ namespace S21Filler
                         if (i > 1)
                             columnIndex = (9 * (i -1)) + 1;
                         columnIndex++;
-                        Console.WriteLine("Mont {0}", worksheet.Cells[1, columnIndex].Value);
+                        
                         if (worksheet.Cells[row, columnIndex + 3] != null && worksheet.Cells[row, columnIndex + 3].Value != null)
                         {
                             var type = PublisherTypes.Publisher;
@@ -319,19 +320,27 @@ namespace S21Filler
         public static void SetYearRecord(this AcroFields fields, int formNumber, YearRecord yearRecord)
         {
             var initIndex = getInitIndex(formNumber);
-
-            fields.SetField("Check Box" + (initIndex + 1), yearRecord.Gender == Genders.Male ? "Yes" : "0");
+            
+            fields.SetField("Check Box" + (initIndex + 1), yearRecord.Gender == Genders.Male ? "Yes" : "0");            
             fields.SetField("Check Box" + (initIndex + 2), yearRecord.Gender == Genders.Female ? "Yes" : "0");
+            fields.SetFieldProperty("Text" + (initIndex + 3), "textsize", 8f, null);
             fields.SetField("Text" + (initIndex + 3), yearRecord.Name + (!string.IsNullOrEmpty(yearRecord.Number) ? $" (#{yearRecord.Number})" : string.Empty));
+            fields.SetFieldProperty("Text" + (initIndex + 4), "textsize", 8f, null);
             fields.SetField("Text" + (initIndex + 4), yearRecord.HomeAddress);
+            fields.SetFieldProperty("Text" + (initIndex + 5), "textsize", 8f, null);
             fields.SetField("Text" + (initIndex + 5), yearRecord.HomeTelephone);
+            fields.SetFieldProperty("Text" + (initIndex + 6), "textsize", 8f, null);
             fields.SetField("Text" + (initIndex + 6), yearRecord.MobileTelephone);
-            fields.SetField("Text" + (initIndex + 7), yearRecord.DateOfBirth.ToString("yyyy-MM-dd"));
-            fields.SetField("Text" + (initIndex + 8), yearRecord.ImmersedDate.HasValue ? yearRecord.ImmersedDate.Value.ToString("yyyyy-MM-dd") : "");
+            fields.SetFieldProperty("Text" + (initIndex + 7), "textsize", 8f, null);
+            fields.SetField("Text" + (initIndex + 7), yearRecord.DateOfBirth?.ToString("yyyy-MM-dd"));
+            fields.SetFieldProperty("Text" + (initIndex + 8), "textsize", 8f, null);
+            fields.SetField("Text" + (initIndex + 8), yearRecord.ImmersedDate?.ToString("yyyy-MM-dd"));
+            fields.SetFieldProperty("Text" + (initIndex + 9), "textsize", 8f, null);
             fields.SetField("Text" + (initIndex + 9), yearRecord.Anointed);
             fields.SetField("Check Box" + (initIndex + 10), yearRecord.E ? "Yes" : "0");
             fields.SetField("Check Box" + (initIndex + 11), yearRecord.MS ? "Yes" : "0");
             fields.SetField("Check Box" + (initIndex + 12), yearRecord.RP ? "Yes" : "0");
+            fields.SetFieldProperty("Text" + (initIndex + 12) + ".01", "textsize", 8f, null);
             fields.SetField("Text" + (initIndex + 12) + ".01", yearRecord.Year.ToString());
 
             foreach (var report in yearRecord.Reports.OrderBy(r => r.Month))
@@ -346,11 +355,15 @@ namespace S21Filler
 
         public static void SetTotalReport(this AcroFields fields, int formNumber, MonthReport report)
         {
-            var initIndex = getInitIndexForMonth(formNumber, 14);
+            var initIndex = getInitIndexForMonth(formNumber, 13);
 
+            fields.SetFieldProperty("Text" + (initIndex + 1), "textsize", 8f, null);
             fields.SetField("Text" + (initIndex + 1), report.Placements.ToString());
+            fields.SetFieldProperty("Text" + (initIndex + 2), "textsize", 8f, null);
             fields.SetField("Text" + (initIndex + 2), report.VideoShowings.ToString());
+            fields.SetFieldProperty("Text" + (initIndex + 3), "textsize", 8f, null);
             fields.SetField("Text" + (initIndex + 3), report.Hours.ToString());
+            fields.SetFieldProperty("Text" + (initIndex + 4), "textsize", 8f, null);
             fields.SetField("Text" + (initIndex + 4), report.ReturnVisits.ToString());
 
         }
@@ -359,11 +372,17 @@ namespace S21Filler
         {
             var initIndex = getInitIndexForMonth(formNumber, report.Month);
 
+            fields.SetFieldProperty("Text" + (initIndex + 1), "textsize", 8f, null);
             fields.SetField("Text" + (initIndex + 1), report.Placements.ToString());
+            fields.SetFieldProperty("Text" + (initIndex + 2), "textsize", 8f, null);
             fields.SetField("Text" + (initIndex + 2), report.VideoShowings.ToString());
+            fields.SetFieldProperty("Text" + (initIndex + 3), "textsize", 8f, null);
             fields.SetField("Text" + (initIndex + 3), report.Hours.ToString());
+            fields.SetFieldProperty("Text" + (initIndex + 4), "textsize", 8f, null);
             fields.SetField("Text" + (initIndex + 4), report.ReturnVisits.ToString());
+            fields.SetFieldProperty("Text" + (initIndex + 5), "textsize", 8f, null);
             fields.SetField("Text" + (initIndex + 5), report.Studies.ToString());
+            fields.SetFieldProperty("Text" + (initIndex + 6), "textsize", 8f, null);
             fields.SetField("Text" + (initIndex + 6), report.Remarks);
 
         }
