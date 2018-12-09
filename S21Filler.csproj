@@ -45,12 +45,14 @@
   <ItemGroup>
     <Compile Include="Model\Gender.cs" />
     <Compile Include="Model\MonthReport.cs" />
+    <Compile Include="Model\PublisherTypes.cs" />
     <Compile Include="Model\YearRecord.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="README.md" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="CommandLineParser">

@@ -25,5 +25,6 @@ namespace S21Filler.Model
         public bool RP { get; set; }
         public int Year { get; set; }
         public IList<MonthReport> Reports { get; set; }
+        public MonthReport Totals { get; set; }
     }
 }

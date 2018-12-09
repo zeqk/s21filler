@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace S21Filler.Model
+﻿namespace S21Filler.Model
 {
     public class MonthReport
     {
@@ -15,5 +9,6 @@ namespace S21Filler.Model
         public int ReturnVisits { get; set; }
         public int Studies { get; set; }
         public string Remarks { get; set; }
+        public PublisherTypes Type { get; set; }
     }
 }

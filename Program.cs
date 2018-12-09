@@ -6,8 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace S21Filler
 {
@@ -79,15 +77,117 @@ namespace S21Filler
 
                         pdfStamper.Close();
                     }
-
                 }
+
+                Console.WriteLine("S-21 generated for {0} {1} months", record.Name,record.Reports.Count);
             }
-                
-            
+
+            //PR Totals
+            foreach (var type in (PublisherTypes[])Enum.GetValues(typeof(PublisherTypes)))
+            {
+                var totalYearRecord = getTotals(records, type);
+
+                using (var pdfReader = new PdfReader(opts.S21Template))
+                {
+                    var output = Path.Combine(opts.OutputFolder, "S-21 - " + totalYearRecord.Name + ".pdf");
+
+                    using (var pdfStamper = new PdfStamper(pdfReader, new FileStream(output, FileMode.Create)))
+                    {
+
+                        var pdfFormFields = pdfStamper.AcroFields;
+                        //pdfFormFields.GenerateAppearances = true;
+                        pdfFormFields.SetYearRecord(1, totalYearRecord);
+
+                        // flatten the form to remove editting options, set it to false
+
+                        // to leave the form open to subsequent manual edits
+
+                        //pdfStamper.FormFlattening = false;
+                        //pdfStamper.AnnotationFlattening = false;                        
+
+                        // close the pdf
+
+                        pdfStamper.Close();
+                    }
+                }
+                Console.WriteLine("S-21 generated for {0}", totalYearRecord.Name);
+            }
+
+
+
+
+
 
         }
 
 
+        static YearRecord getTotals(IList<YearRecord> records, PublisherTypes type)
+        {
+            var rv = new YearRecord()
+            {
+                Anointed = string.Empty,
+                DateOfBirth = DateTime.Now,
+                E = false,
+                Gender = Genders.Male,
+                HomeAddress = string.Empty,
+                HomeTelephone = string.Empty,
+                ImmersedDate = null,
+                MobileTelephone = string.Empty,
+                MS = false,
+                Number = null,
+                RP = false,
+                Year = records.FirstOrDefault().Year
+            
+            };
+
+            switch (type)
+            {
+                case PublisherTypes.RegularPioneer:
+                    rv.Name = "PRECURSORES REGULARES";
+                    break;
+                case PublisherTypes.AuxiliarPioneer:
+                    rv.Name = "PRECURSORES AUXILIARES";
+                    break;
+                case PublisherTypes.Publisher:
+                default:
+                    rv.Name = "PUBLICADORES";
+                    break;
+            }
+
+            var monthsCount = records.Max(r => r.Reports.Count);
+
+            //del 1 al 12
+            for (int month = 1; month <= monthsCount; month++)
+            {
+                var monthReport = new MonthReport
+                {
+                    Placements = records.Sum(yr => yr.Reports.Where(mr => mr.Month == month && mr.Type == type).Sum(mr => mr.Placements)),
+                    VideoShowings = records.Sum(yr => yr.Reports.Where(mr => mr.Month == month && mr.Type == type).Sum(mr => mr.VideoShowings)),
+                    Hours = records.Sum(yr => yr.Reports.Where(mr => mr.Month == month && mr.Type == type).Sum(mr => mr.Hours)),
+                    ReturnVisits = records.Sum(yr => yr.Reports.Where(mr => mr.Month == month && mr.Type == type).Sum(mr => mr.ReturnVisits)),
+                    Studies = records.Sum(yr => yr.Reports.Where(mr => mr.Month == month && mr.Type == type).Sum(mr => mr.Studies))
+                };
+                rv.Reports.Add(monthReport);
+            }
+
+            rv.Totals = new MonthReport
+            {
+                Placements = rv.Reports.Sum(r => r.Placements),
+                VideoShowings = rv.Reports.Sum(r => r.VideoShowings),
+                Hours = rv.Reports.Sum(r => r.Hours),
+                ReturnVisits = rv.Reports.Sum(r => r.ReturnVisits)
+            };
+
+
+            return rv;
+        }
+
+        /// <summary>
+        /// Extraction
+        /// </summary>
+        /// <param name="year"></param>
+        /// <param name="excelFile"></param>
+        /// <returns></returns>
         static IList<YearRecord> getYearRecords(int year, string excelFile)
         {
             var rv = new List<YearRecord>();
@@ -107,7 +207,10 @@ namespace S21Filler
                         i++;
                         record = getYearRecord(worksheet, i);
                         if (record != null)
+                        {
+                            record.Year = year;
                             rv.Add(record);
+                        }
 
                     } while (record != null);
 
@@ -147,26 +250,53 @@ namespace S21Filler
 
                     for (int i = 1; i < 12; i++)
                     {
-                        var init = 1;
+                        var columnIndex = 1; //Primera columna (Nombre)
                         if (i > 1)
-                            init = 10 * i;
-                        init++;
-                        if (worksheet.Cells[row, init + 3] != null && worksheet.Cells[row, init + 3].Value != null)
+                            columnIndex = (9 * (i -1)) + 1;
+                        columnIndex++;
+                        Console.WriteLine("Mont {0}", worksheet.Cells[1, columnIndex].Value);
+                        if (worksheet.Cells[row, columnIndex + 3] != null && worksheet.Cells[row, columnIndex + 3].Value != null)
                         {
+                            var type = PublisherTypes.Publisher;
+                            switch (worksheet.Cells[row, columnIndex + 0].GetValue<string>())
+                            {
+                                case "PR":
+                                    type = PublisherTypes.RegularPioneer;
+                                    break;
+                                case "PA":
+                                    type = PublisherTypes.AuxiliarPioneer;
+                                    break;
+                                case "PUB":
+                                default:
+                                    type = PublisherTypes.Publisher;
+                                    break;
+                            }
+
                             rv.Reports.Add(new MonthReport
                             {
-                                Placements = worksheet.Cells[row, init + 1].GetValue<int>(),
-                                VideoShowings = worksheet.Cells[row, init + 2].GetValue<int>(),
-                                Hours = worksheet.Cells[row, init + 3].GetValue<int>(),
-                                ReturnVisits = worksheet.Cells[row, init + 4].GetValue<int>(),
-                                Studies = worksheet.Cells[row, init + 5].GetValue<int>(),
+                                Type = type,
+                                Placements = worksheet.Cells[row, columnIndex + 1].GetValue<int>(),
+                                VideoShowings = worksheet.Cells[row, columnIndex + 2].GetValue<int>(),
+                                Hours = worksheet.Cells[row, columnIndex + 3].GetValue<int>(),
+                                ReturnVisits = worksheet.Cells[row, columnIndex + 4].GetValue<int>(),
+                                Studies = worksheet.Cells[row, columnIndex + 5].GetValue<int>(),
                                 Month = i,
-                                Remarks = worksheet.Cells[row, init + 1].Comment != null ? worksheet.Cells[row, init + 1].Comment.Text : null
+                                Remarks = (type == PublisherTypes.AuxiliarPioneer ? "PA" : string.Empty) + " " + (worksheet.Cells[row, columnIndex + 1].Comment != null ? worksheet.Cells[row, columnIndex + 1].Comment.Text : string.Empty)
                             });
                         }
                         else
                             break;
                     }
+
+                    rv.Totals = new MonthReport
+                    {
+                        Placements = rv.Reports.Sum(r => r.Placements),
+                        VideoShowings = rv.Reports.Sum(r => r.VideoShowings),
+                        Hours = rv.Reports.Sum(r => r.Hours),
+                        ReturnVisits = rv.Reports.Sum(r => r.ReturnVisits)
+                    };
+
+
                 }
             }
             catch (Exception ex)
@@ -192,7 +322,7 @@ namespace S21Filler
 
             fields.SetField("Check Box" + (initIndex + 1), yearRecord.Gender == Genders.Male ? "Yes" : "0");
             fields.SetField("Check Box" + (initIndex + 2), yearRecord.Gender == Genders.Female ? "Yes" : "0");
-            fields.SetField("Text" + (initIndex + 3), yearRecord.Name + $" (#{yearRecord.Number})");
+            fields.SetField("Text" + (initIndex + 3), yearRecord.Name + (!string.IsNullOrEmpty(yearRecord.Number) ? $" (#{yearRecord.Number})" : string.Empty));
             fields.SetField("Text" + (initIndex + 4), yearRecord.HomeAddress);
             fields.SetField("Text" + (initIndex + 5), yearRecord.HomeTelephone);
             fields.SetField("Text" + (initIndex + 6), yearRecord.MobileTelephone);
@@ -208,6 +338,20 @@ namespace S21Filler
             {
                 fields.SetMonthReport(formNumber, report);
             }
+
+            fields.SetTotalReport(formNumber, yearRecord.Totals);
+
+        }
+
+
+        public static void SetTotalReport(this AcroFields fields, int formNumber, MonthReport report)
+        {
+            var initIndex = getInitIndexForMonth(formNumber, 14);
+
+            fields.SetField("Text" + (initIndex + 1), report.Placements.ToString());
+            fields.SetField("Text" + (initIndex + 2), report.VideoShowings.ToString());
+            fields.SetField("Text" + (initIndex + 3), report.Hours.ToString());
+            fields.SetField("Text" + (initIndex + 4), report.ReturnVisits.ToString());
 
         }
 
@@ -230,7 +374,7 @@ namespace S21Filler
 
             initIndex += 12;
 
-            for (int i = 1; i < month; i++)
+            for (int i = 1; i <= month; i++)
             {
                 if(i > 1)
                 {
