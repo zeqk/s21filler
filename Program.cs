@@ -233,8 +233,10 @@ namespace S21Filler
                     VideoShowings = records.Sum(yr => yr.Reports.Where(mr => mr.Month == month && mr.Type == type).Sum(mr => mr.VideoShowings)),
                     Hours = records.Sum(yr => yr.Reports.Where(mr => mr.Month == month && mr.Type == type).Sum(mr => mr.Hours)),
                     ReturnVisits = records.Sum(yr => yr.Reports.Where(mr => mr.Month == month && mr.Type == type).Sum(mr => mr.ReturnVisits)),
-                    Studies = records.Sum(yr => yr.Reports.Where(mr => mr.Month == month && mr.Type == type).Sum(mr => mr.Studies))
+                    Studies = records.Sum(yr => yr.Reports.Where(mr => mr.Month == month && mr.Type == type).Sum(mr => mr.Studies)),
+                    Remarks = records.SelectMany(yr => yr.Reports).Count(mr => mr.Month == month && mr.Type == type).ToString()
                 };
+                
                 rv.Reports.Add(monthReport);
             }
 
@@ -435,6 +437,8 @@ namespace S21Filler
             fields.SetField("Text" + (initIndex + 3), report.Hours.ToString());
             fields.SetFieldProperty("Text" + (initIndex + 4), "textsize", 8f, null);
             fields.SetField("Text" + (initIndex + 4), report.ReturnVisits.ToString());
+            fields.SetFieldProperty("Text" + (initIndex + 6), "textsize", 8f, null);
+            fields.SetField("Text" + (initIndex + 6), report.Remarks);
 
         }
 
