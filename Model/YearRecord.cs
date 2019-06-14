@@ -19,7 +19,7 @@ namespace S21Filler.Model
         public string MobileTelephone { get; set; }
         public DateTime? DateOfBirth { get; set; }
         public DateTime? ImmersedDate { get; set; }
-        public string Anointed { get; set; }
+        public bool Anointed { get; set; }
         public bool E { get; set; }
         public bool MS { get; set; }
         public bool RP { get; set; }
